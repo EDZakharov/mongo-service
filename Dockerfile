@@ -1,10 +1,25 @@
 
+# FROM mongo:latest
+
+# COPY mongo-init.sh /docker-entrypoint-initdb.d/mongo-init.sh
+
+# VOLUME ["/data/db", "/var/log/mongodb"]
+# EXPOSE 27017
+
+# CMD ["mongod"]
+
+
+# Используем официальный образ MongoDB как базовый образ
 FROM mongo:latest
-WORKDIR /docker-entrypoint-initdb.d
 
-COPY mongo-init.js .
-
+# Копируем файл конфигурации внутрь контейнера
+COPY mongo.cfg /etc/mongo.cfg
+COPY mongo-init.sh /docker-entrypoint-initdb.d/mongo-init.sh
 VOLUME ["/data/db"]
-EXPOSE 27017
 
-CMD ["mongod", "--bind_ip", "77.222.43.158"]
+# Запускаем MongoDB с указанием файла конфигурации
+CMD ["mongod", "--config", "/etc/mongo.cfg"]
+
+
+# /mongo/data/db
+# /mongo/logs
