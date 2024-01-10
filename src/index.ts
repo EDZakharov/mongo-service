@@ -1,16 +1,19 @@
 import bodyParser from 'body-parser';
 import { consola } from 'consola';
 import cors from 'cors';
-import express from 'express';
+import express, { Express } from 'express';
 import { connect } from 'mongoose';
+import passport from 'passport';
 import { config } from './config';
-import { rt } from './routes/routes';
+import { passportConfig } from './middlewares/passportConfig';
+import { router } from './routes/routes';
 
-const app = express();
+const app: Express = express();
 app.use(cors());
 app.use(bodyParser.json());
-
-app.use('/api/users', rt);
+app.use(passport.initialize());
+passportConfig(passport);
+app.use('/api/users', router);
 
 const startApp = async () => {
     try {
