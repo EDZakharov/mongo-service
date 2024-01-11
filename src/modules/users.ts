@@ -1,6 +1,7 @@
+import { Response } from 'express';
 import { User } from '../models/usermodel';
 
-export const getUsers = async (res: any) => {
+export const getUsers = async (res: Response) => {
     try {
         const users = await User.find({});
         if (!users) {
@@ -19,7 +20,7 @@ export const getUsers = async (res: any) => {
     }
 };
 
-export const deleteUsers = async (res: any) => {
+export const deleteUsers = async (res: Response) => {
     try {
         const users = await User.deleteMany({});
         if (!users) {
@@ -35,5 +36,18 @@ export const deleteUsers = async (res: any) => {
             message: 'Unable to delete users',
             success: false,
         });
+    }
+};
+
+export const getRole = async (email: string): Promise<undefined | string> => {
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return;
+        }
+        return user.role;
+    } catch (error) {
+        //add logger
+        return;
     }
 };
