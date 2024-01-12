@@ -1,12 +1,10 @@
 import { Request, Response, Router } from 'express';
-import {
-    authenticateUser,
-    checkRole,
-    serializeUser,
-    userLogin,
-    userRegister,
-} from '../utils/auth';
-import { deleteUsers, getUsers } from '../utils/users';
+import { withAuth } from '../middlewares/auth';
+import { withCheckRole } from '../middlewares/checkrole';
+import { userLogin } from '../modules/login';
+import { userRegister } from '../modules/registration';
+import { deleteTokens, getTokens } from '../modules/tokens';
+import { deleteUsers, getUsers } from '../modules/users';
 export const router = Router();
 
 const endpoints = {
@@ -14,10 +12,12 @@ const endpoints = {
     login_user: '/login-user',
     register_admin: '/register-admin',
     login_admin: '/login-admin',
-    profile: '/profile',
+    profile_user: '/profile-user',
     userdata: '/userdata',
     get_users: '/get-users',
     delete_users: '/delete-users',
+    get_tokens: '/get-tokens',
+    delete_tokens: '/delete-tokens',
 };
 
 router.post(endpoints.register_user, async (req: Request, res: Response) => {
@@ -43,25 +43,38 @@ router.delete(endpoints.delete_users, async (_req: Request, res: Response) => {
     await deleteUsers(res);
 });
 
-//Protected routes
-router.get(endpoints.profile, authenticateUser, async (req, res) => {
-    console.log(req.user);
-
-    const data = serializeUser(req.user);
-    console.log(data);
-    return res.json('hi');
+router.get(endpoints.get_tokens, async (_req: Request, res: Response) => {
+    await getTokens(res);
 });
 
+router.delete(endpoints.delete_tokens, async (_req: Request, res: Response) => {
+    await deleteTokens(res);
+});
+
+//Protected routes
 router.get(
-    endpoints.userdata,
-    authenticateUser,
-    checkRole(['user']),
-    async (req, res) => {
-        console.log(req.user);
+    endpoints.profile_user,
+    withAuth,
+    withCheckRole(['user']),
+    async (_req: Request, res: Response) => {
+        // console.log(req);
 
-        const data = serializeUser(req.user);
-        console.log(data);
-
+        // const data = serializeUser(req.user);
+        // console.log(data);
         return res.json('hi');
     }
 );
+
+// router.get(
+//     endpoints.userdata,
+//     authenticateUser,
+//     checkRole(['user']),
+//     async (req, res) => {
+//         console.log(req.user);
+
+//         const data = serializeUser(req.user);
+//         console.log(data);
+
+//         return res.json('hi');
+//     }
+// );
