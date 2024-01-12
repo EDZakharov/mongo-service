@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { withAuth } from '../middlewares/auth';
 import { withCheckRole } from '../middlewares/checkrole';
 import { userLogin } from '../modules/login';
+import { refresh } from '../modules/refresh';
 import { userRegister } from '../modules/registration';
 import { deleteTokens, getTokens } from '../modules/tokens';
 import { deleteUsers, getUsers } from '../modules/users';
@@ -18,6 +19,7 @@ const endpoints = {
     delete_users: '/delete-users',
     get_tokens: '/get-tokens',
     delete_tokens: '/delete-tokens',
+    refresh_tokens: '/refresh-tokens',
 };
 
 router.post(endpoints.register_user, async (req: Request, res: Response) => {
@@ -49,6 +51,10 @@ router.get(endpoints.get_tokens, async (_req: Request, res: Response) => {
 
 router.delete(endpoints.delete_tokens, async (_req: Request, res: Response) => {
     await deleteTokens(res);
+});
+
+router.put(endpoints.refresh_tokens, async (req: Request, res: Response) => {
+    await refresh(req, res);
 });
 
 //Protected routes
