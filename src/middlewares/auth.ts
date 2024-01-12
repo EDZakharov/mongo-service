@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { config } from '../config';
 import { validateAccessToken } from '../modules/tokens';
+import { showUnauthorizedError } from '../utils/unauthorizedError';
 
 export async function withAuth(
     req: Request,
@@ -36,10 +37,6 @@ export async function withAuth(
     } catch (e) {
         return showUnauthorizedError(res);
     }
-}
-
-function showUnauthorizedError(res: Response): Response {
-    return res.status(401).json({ message: 'Unauthorized', success: false });
 }
 
 // export const serializeUser = (user: any) => {
