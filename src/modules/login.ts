@@ -1,10 +1,20 @@
 import bcrypt from 'bcrypt';
+import { Response } from 'express';
 import { config } from '../config';
 import UserDTO from '../dto/userDTO';
 import { User } from '../models/usermodel';
 import { generateTokens, saveRefreshToken } from './tokens';
 
-export const userLogin = async (userCred: any, role: string, res: any) => {
+interface IUserCredentials {
+    username: string;
+    password: string;
+}
+
+export const userLogin = async (
+    userCredentials: any,
+    role: string,
+    res: Response
+) => {
     const checkAccessSecret = config.DB_SECRET_ACCESS_TOKEN;
     const checkRefreshSecret = config.DB_SECRET_REFRESH_TOKEN;
     if (!checkAccessSecret || !checkRefreshSecret) {
@@ -14,7 +24,7 @@ export const userLogin = async (userCred: any, role: string, res: any) => {
         });
     }
 
-    const { username, password } = userCred;
+    const { username, password }: IUserCredentials = userCredentials;
     const user = await User.findOne({ username });
     if (!user) {
         return res.status(404).json({
@@ -44,16 +54,16 @@ export const userLogin = async (userCred: any, role: string, res: any) => {
         checkAccessSecret,
         checkRefreshSecret
     );
-    // await deleteToken(userDto.id, tokens.refreshToken);
+
     await saveRefreshToken(userDto.id, tokens.refreshToken);
 
-    let result = {
-        accessToken: tokens.accessToken,
-        // refreshToken: tokens.refreshToken,
-    };
-    res.cookie('refreshToken', tokens.refreshToken, { httpOnly: true });
+    res.cookie('refreshToken', tokens.refreshToken, {
+        httpOnly: true,
+        sameSite: 'strict',
+    });
     return res.status(200).json({
-        ...result,
+        userId: userDto.id,
+        accessToken: tokens.accessToken,
         message: 'You are now logged in',
         success: true,
     });

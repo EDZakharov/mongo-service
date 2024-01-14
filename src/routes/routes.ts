@@ -1,9 +1,18 @@
 import { Request, Response, Router } from 'express';
 import { withAuth } from '../middlewares/auth';
 import { withCheckRole } from '../middlewares/checkrole';
+import { rateLimiter } from '../middlewares/rateLimiter';
+import { addValidCoin, getValidCoins } from '../modules/coins';
 import { userLogin } from '../modules/login';
+import { userLogout } from '../modules/logout';
 import { refresh } from '../modules/refresh';
 import { userRegister } from '../modules/registration';
+import {
+    deleteAllStrategiesFromDb,
+    getAllStrategiesFromDb,
+    getStrategyFromDb,
+    setStrategyToDb,
+} from '../modules/strategy';
 import { deleteTokens, getTokens } from '../modules/tokens';
 import { deleteUsers, getUsers } from '../modules/users';
 export const router = Router();
@@ -11,76 +20,159 @@ export const router = Router();
 const endpoints = {
     register_user: '/register-user',
     login_user: '/login-user',
+    logout: '/logout',
     register_admin: '/register-admin',
     login_admin: '/login-admin',
     profile_user: '/profile-user',
-    userdata: '/userdata',
     get_users: '/get-users',
     delete_users: '/delete-users',
     get_tokens: '/get-tokens',
     delete_tokens: '/delete-tokens',
     refresh_tokens: '/refresh-tokens',
+    get_coin_strategy: '/get-coin-strategy',
+    set_coin_strategy: '/set-coin-strategy',
+    get_all_coin_strategy: '/get-all-coin-strategy',
+    delete_all_coin_strategy: '/delete-all-coin-strategy',
+    add_valid_coin: '/add-valid-coin',
+    get_valid_coins: '/get-valid-coins',
 };
 
-router.post(endpoints.register_user, async (req: Request, res: Response) => {
-    await userRegister(req.body, 'user', res);
-});
-router.post(endpoints.login_user, async (req: Request, res: Response) => {
-    await userLogin(req.body, 'user', res);
-});
-
-router.post(endpoints.register_admin, async (req: Request, res: Response) => {
-    await userRegister(req.body, 'admin', res);
-});
-
-router.post(endpoints.login_admin, async (req: Request, res: Response) => {
-    await userLogin(req.body, 'admin', res);
-});
-
-router.get(endpoints.get_users, async (_req: Request, res: Response) => {
-    await getUsers(res);
-});
-
-router.delete(endpoints.delete_users, async (_req: Request, res: Response) => {
-    await deleteUsers(res);
-});
-
-router.get(endpoints.get_tokens, async (_req: Request, res: Response) => {
-    await getTokens(res);
-});
-
-router.delete(endpoints.delete_tokens, async (_req: Request, res: Response) => {
-    await deleteTokens(res);
-});
-
-router.put(endpoints.refresh_tokens, async (req: Request, res: Response) => {
-    await refresh(req, res);
-});
-
-//Protected routes
-router.get(
-    endpoints.profile_user,
-    withAuth,
-    withCheckRole(['user']),
-    async (_req: Request, res: Response) => {
-        // console.log(req);
-
-        // const data = serializeUser(req.user);
-        // console.log(data);
-        return res.json('hi');
+//Public endpoints
+router.post(
+    endpoints.register_user,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await userRegister(req.body, 'user', res);
+    }
+);
+router.post(
+    endpoints.login_user,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await userLogin(req.body, 'user', res);
     }
 );
 
-// router.get(
-//     endpoints.userdata,
-//     authenticateUser,
-//     checkRole(['user']),
-//     async (req, res) => {
-//         console.log(req.user);
+router.post(
+    endpoints.logout,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await userLogout(res);
+    }
+);
 
-//         const data = serializeUser(req.user);
-//         console.log(data);
+router.post(
+    endpoints.login_admin,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await userLogin(req.body, 'admin', res);
+    }
+);
 
-//         return res.json('hi');
-//     }
-// );
+router.put(
+    endpoints.refresh_tokens,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await refresh(req, res);
+    }
+);
+
+//Protected public endpoints
+router.get(
+    endpoints.profile_user,
+    rateLimiter,
+    withAuth,
+    withCheckRole(['user']),
+    async (_req: Request, res: Response) => {
+        return res.json('hi');
+    }
+);
+router.get(
+    endpoints.get_coin_strategy,
+    rateLimiter,
+    withAuth,
+    async (req: Request, res: Response) => {
+        getStrategyFromDb(req, res);
+    }
+);
+router.post(
+    endpoints.set_coin_strategy,
+    rateLimiter,
+    withAuth,
+    async (req: Request, res: Response) => {
+        setStrategyToDb(req, res);
+    }
+);
+router.get(
+    endpoints.get_all_coin_strategy,
+    rateLimiter,
+    withAuth,
+    async (_req: Request, res: Response) => {
+        getAllStrategiesFromDb(res);
+    }
+);
+router.delete(
+    endpoints.delete_all_coin_strategy,
+    withAuth,
+    async (_req: Request, res: Response) => {
+        deleteAllStrategiesFromDb(res);
+    }
+);
+
+//Admin endpoints
+router.post(
+    endpoints.register_admin,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await userRegister(req.body, 'admin', res);
+    }
+);
+
+router.post(
+    endpoints.add_valid_coin,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await addValidCoin(req, res);
+    }
+);
+
+router.get(
+    endpoints.get_valid_coins,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await getValidCoins(res);
+    }
+);
+
+router.get(
+    endpoints.get_users,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await getUsers(res);
+    }
+);
+
+//Temporary endpoints
+router.get(
+    endpoints.get_tokens,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await getTokens(res);
+    }
+);
+
+router.delete(
+    endpoints.delete_tokens,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await deleteTokens(res);
+    }
+);
+
+router.delete(
+    endpoints.delete_users,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await deleteUsers(res);
+    }
+);

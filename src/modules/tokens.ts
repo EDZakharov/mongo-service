@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { TokenModel } from '../models/tokenModel';
 import { ObjectId } from '../models/usermodel';
@@ -13,7 +14,7 @@ export function generateTokens(
     refreshSecret: string
 ): IGenTokens {
     const accessToken = jwt.sign(payload, accessSecret, {
-        expiresIn: '20m',
+        expiresIn: '50m',
     });
     const refreshToken = jwt.sign(payload, refreshSecret, {
         expiresIn: '15d',
@@ -69,7 +70,7 @@ export async function validateRefreshToken(
     }
 }
 
-export const getTokens = async (res: any) => {
+export const getTokens = async (res: Response) => {
     try {
         const result = await TokenModel.find({});
         if (!result) {
@@ -90,7 +91,7 @@ export const getTokens = async (res: any) => {
 
 export const deleteToken = async (userId: ObjectId, token: string) => {
     try {
-        const result = await TokenModel.findOne({ userId });
+        const result = await TokenModel.findOneAndDelete({ userId });
         if (!result) {
             return;
         }
@@ -104,7 +105,7 @@ export const deleteToken = async (userId: ObjectId, token: string) => {
     }
 };
 
-export const deleteTokens = async (res: any) => {
+export const deleteTokens = async (res: Response) => {
     try {
         const result = await TokenModel.deleteMany({});
         if (!result) {
@@ -113,6 +114,7 @@ export const deleteTokens = async (res: any) => {
                 success: false,
             });
         }
+        res.clearCookie('refreshToken');
         return res.status(200).json(result);
     } catch (error) {
         //add logger

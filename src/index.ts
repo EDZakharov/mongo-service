@@ -1,18 +1,24 @@
 import bodyParser from 'body-parser';
 import { consola } from 'consola';
+import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
+import rateLimit from 'express-rate-limit';
 import { connect } from 'mongoose';
-import passport from 'passport';
 import { config } from './config';
-import { passportConfig } from './middlewares/passportConfig';
 import { router } from './routes/routes';
 
 const app: Express = express();
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 50,
+    message: 'Too many requests from this IP, please try again later',
+});
+
 app.use(cors());
+app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(passport.initialize());
-passportConfig(passport);
+app.use(limiter);
 app.use('/api/users', router);
 
 const startApp = async () => {
