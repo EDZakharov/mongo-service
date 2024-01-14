@@ -8,6 +8,11 @@ import { userLogout } from '../modules/logout';
 import { refresh } from '../modules/refresh';
 import { userRegister } from '../modules/registration';
 import {
+    deleteCurrentStep,
+    getCurrentStep,
+    setCurrentStep,
+} from '../modules/steps';
+import {
     deleteAllStrategiesFromDb,
     getAllStrategiesFromDb,
     getStrategyFromDb,
@@ -35,6 +40,9 @@ const endpoints = {
     delete_all_coin_strategy: '/delete-all-coin-strategy',
     add_valid_coin: '/add-valid-coin',
     get_valid_coins: '/get-valid-coins',
+    get_current_step: '/get-current-step',
+    set_current_step: '/set-current-step',
+    delete_current_step: '/delete-current-step',
 };
 
 //Public endpoints
@@ -87,6 +95,8 @@ router.get(
         return res.json('hi');
     }
 );
+
+// STRATEGY
 router.get(
     endpoints.get_coin_strategy,
     rateLimiter,
@@ -95,6 +105,7 @@ router.get(
         getStrategyFromDb(req, res);
     }
 );
+
 router.post(
     endpoints.set_coin_strategy,
     rateLimiter,
@@ -103,6 +114,7 @@ router.post(
         setStrategyToDb(req, res);
     }
 );
+
 router.get(
     endpoints.get_all_coin_strategy,
     rateLimiter,
@@ -111,11 +123,41 @@ router.get(
         getAllStrategiesFromDb(res);
     }
 );
+
 router.delete(
     endpoints.delete_all_coin_strategy,
+    rateLimiter,
     withAuth,
     async (_req: Request, res: Response) => {
         deleteAllStrategiesFromDb(res);
+    }
+);
+
+// STEPS
+router.post(
+    endpoints.set_current_step,
+    rateLimiter,
+    // withAuth,
+    async (req: Request, res: Response) => {
+        setCurrentStep(req, res);
+    }
+);
+
+router.get(
+    endpoints.get_current_step,
+    rateLimiter,
+    // withAuth,
+    async (req: Request, res: Response) => {
+        getCurrentStep(req, res);
+    }
+);
+
+router.delete(
+    endpoints.delete_current_step,
+    rateLimiter,
+    // withAuth,
+    async (req: Request, res: Response) => {
+        deleteCurrentStep(req, res);
     }
 );
 
@@ -131,6 +173,7 @@ router.post(
 router.post(
     endpoints.add_valid_coin,
     rateLimiter,
+    withAuth,
     async (req: Request, res: Response) => {
         await addValidCoin(req, res);
     }
@@ -139,6 +182,7 @@ router.post(
 router.get(
     endpoints.get_valid_coins,
     rateLimiter,
+    withAuth,
     async (_req: Request, res: Response) => {
         await getValidCoins(res);
     }
@@ -147,6 +191,7 @@ router.get(
 router.get(
     endpoints.get_users,
     rateLimiter,
+    withAuth,
     async (_req: Request, res: Response) => {
         await getUsers(res);
     }
@@ -156,6 +201,7 @@ router.get(
 router.get(
     endpoints.get_tokens,
     rateLimiter,
+    withAuth,
     async (_req: Request, res: Response) => {
         await getTokens(res);
     }
@@ -164,6 +210,7 @@ router.get(
 router.delete(
     endpoints.delete_tokens,
     rateLimiter,
+    withAuth,
     async (_req: Request, res: Response) => {
         await deleteTokens(res);
     }
@@ -172,6 +219,7 @@ router.delete(
 router.delete(
     endpoints.delete_users,
     rateLimiter,
+    withAuth,
     async (_req: Request, res: Response) => {
         await deleteUsers(res);
     }
