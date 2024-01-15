@@ -139,6 +139,52 @@ export async function getStrategyFromDb(req: Request, res: Response) {
     }
 }
 
+interface IQuery {
+    id?: string;
+    coin?: string;
+}
+
+export async function deleteStrategyFromDb(req: Request, res: Response) {
+    try {
+        const { id, coin }: IQuery = req.query;
+
+        if (!coin || !id) {
+            return res.status(400).json({
+                message: 'Bad query',
+                status: false,
+            });
+        }
+
+        if (id.length !== 24) {
+            return res.status(400).json({
+                message: 'Id must be 24 hex string',
+                status: false,
+            });
+        }
+
+        const deletedStrategy = await Strategy.findOneAndDelete({
+            userId: id,
+            coin,
+        });
+        if (!deletedStrategy) {
+            return res.status(404).json({
+                message: 'Strategies not found',
+                status: false,
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Strategy deleted',
+            status: true,
+        });
+    } catch (error) {
+        return res.status(400).json({
+            message: 'Unable to delete strategy',
+            status: false,
+        });
+    }
+}
+
 //ADMIN QUERY
 export async function getAllStrategiesFromDb(res: Response) {
     try {

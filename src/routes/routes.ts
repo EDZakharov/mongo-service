@@ -14,6 +14,7 @@ import {
 } from '../modules/steps';
 import {
     deleteAllStrategiesFromDb,
+    deleteStrategyFromDb,
     getAllStrategiesFromDb,
     getStrategyFromDb,
     setStrategyToDb,
@@ -36,6 +37,7 @@ const endpoints = {
     refresh_tokens: '/refresh-tokens',
     get_coin_strategy: '/get-coin-strategy',
     set_coin_strategy: '/set-coin-strategy',
+    delete_coin_strategy: '/delete-coin-strategy',
     get_all_coin_strategy: '/get-all-coin-strategy',
     delete_all_coin_strategy: '/delete-all-coin-strategy',
     add_valid_coin: '/add-valid-coin',
@@ -100,7 +102,7 @@ router.get(
 router.get(
     endpoints.get_coin_strategy,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (req: Request, res: Response) => {
         getStrategyFromDb(req, res);
     }
@@ -109,16 +111,25 @@ router.get(
 router.post(
     endpoints.set_coin_strategy,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (req: Request, res: Response) => {
         setStrategyToDb(req, res);
+    }
+);
+
+router.delete(
+    endpoints.delete_coin_strategy,
+    rateLimiter,
+    // withAuth,
+    async (req: Request, res: Response) => {
+        deleteStrategyFromDb(req, res);
     }
 );
 
 router.get(
     endpoints.get_all_coin_strategy,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (_req: Request, res: Response) => {
         getAllStrategiesFromDb(res);
     }
@@ -127,7 +138,7 @@ router.get(
 router.delete(
     endpoints.delete_all_coin_strategy,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (_req: Request, res: Response) => {
         deleteAllStrategiesFromDb(res);
     }
@@ -173,7 +184,7 @@ router.post(
 router.post(
     endpoints.add_valid_coin,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (req: Request, res: Response) => {
         await addValidCoin(req, res);
     }
@@ -182,7 +193,7 @@ router.post(
 router.get(
     endpoints.get_valid_coins,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (_req: Request, res: Response) => {
         await getValidCoins(res);
     }
