@@ -11,7 +11,7 @@ import { router } from './routes/routes';
 const app: Express = express();
 const limiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 200,
+    max: 1000,
     message: 'Too many requests from this IP, please try again later',
 });
 

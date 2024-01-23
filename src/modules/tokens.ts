@@ -14,7 +14,7 @@ export function generateTokens(
     refreshSecret: string
 ): IGenTokens {
     const accessToken = jwt.sign(payload, accessSecret, {
-        expiresIn: '50m',
+        expiresIn: '5s',
     });
     const refreshToken = jwt.sign(payload, refreshSecret, {
         expiresIn: '15d',

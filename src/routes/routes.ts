@@ -102,7 +102,7 @@ router.get(
 router.get(
     endpoints.get_coin_strategy,
     rateLimiter,
-    // withAuth,
+    withAuth,
     async (req: Request, res: Response) => {
         getStrategyFromDb(req, res);
     }
@@ -111,7 +111,7 @@ router.get(
 router.post(
     endpoints.set_coin_strategy,
     rateLimiter,
-    // withAuth,
+    withAuth,
     async (req: Request, res: Response) => {
         setStrategyToDb(req, res);
     }
@@ -148,8 +148,10 @@ router.delete(
 router.post(
     endpoints.set_current_step,
     rateLimiter,
-    // withAuth,
+    withAuth,
     async (req: Request, res: Response) => {
+        console.log('Setstep');
+
         setCurrentStep(req, res);
     }
 );
@@ -157,7 +159,7 @@ router.post(
 router.get(
     endpoints.get_current_step,
     rateLimiter,
-    // withAuth,
+    withAuth,
     async (req: Request, res: Response) => {
         getCurrentStep(req, res);
     }
@@ -212,7 +214,7 @@ router.get(
 router.get(
     endpoints.get_tokens,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (_req: Request, res: Response) => {
         await getTokens(res);
     }
@@ -221,7 +223,7 @@ router.get(
 router.delete(
     endpoints.delete_tokens,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (_req: Request, res: Response) => {
         await deleteTokens(res);
     }
