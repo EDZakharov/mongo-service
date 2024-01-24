@@ -5,6 +5,7 @@ import { rateLimiter } from '../middlewares/rateLimiter';
 import { addValidCoin, getValidCoins } from '../modules/coins';
 import { userLogin } from '../modules/login';
 import { userLogout } from '../modules/logout';
+import { addOrder, deleteAllOrders, getAllOrders } from '../modules/orders';
 import { refresh } from '../modules/refresh';
 import { userRegister } from '../modules/registration';
 import {
@@ -45,6 +46,11 @@ const endpoints = {
     get_current_step: '/get-current-step',
     set_current_step: '/set-current-step',
     delete_current_step: '/delete-current-step',
+    add_order: '/add-order',
+    get_order: '/get-order',
+    get_all_orders: '/get-all-orders',
+    delete_order: '/delete-order',
+    delete_all_orders: '/delete-all-orders',
 };
 
 //Public endpoints
@@ -104,7 +110,7 @@ router.get(
     rateLimiter,
     withAuth,
     async (req: Request, res: Response) => {
-        getStrategyFromDb(req, res);
+        await getStrategyFromDb(req, res);
     }
 );
 
@@ -113,7 +119,7 @@ router.post(
     rateLimiter,
     withAuth,
     async (req: Request, res: Response) => {
-        setStrategyToDb(req, res);
+        await setStrategyToDb(req, res);
     }
 );
 
@@ -122,7 +128,7 @@ router.delete(
     rateLimiter,
     // withAuth,
     async (req: Request, res: Response) => {
-        deleteStrategyFromDb(req, res);
+        await deleteStrategyFromDb(req, res);
     }
 );
 
@@ -131,7 +137,7 @@ router.get(
     rateLimiter,
     // withAuth,
     async (_req: Request, res: Response) => {
-        getAllStrategiesFromDb(res);
+        await getAllStrategiesFromDb(res);
     }
 );
 
@@ -140,7 +146,7 @@ router.delete(
     rateLimiter,
     // withAuth,
     async (_req: Request, res: Response) => {
-        deleteAllStrategiesFromDb(res);
+        await deleteAllStrategiesFromDb(res);
     }
 );
 
@@ -150,9 +156,7 @@ router.post(
     rateLimiter,
     withAuth,
     async (req: Request, res: Response) => {
-        console.log('Setstep');
-
-        setCurrentStep(req, res);
+        await setCurrentStep(req, res);
     }
 );
 
@@ -161,7 +165,7 @@ router.get(
     rateLimiter,
     withAuth,
     async (req: Request, res: Response) => {
-        getCurrentStep(req, res);
+        await getCurrentStep(req, res);
     }
 );
 
@@ -170,7 +174,44 @@ router.delete(
     rateLimiter,
     // withAuth,
     async (req: Request, res: Response) => {
-        deleteCurrentStep(req, res);
+        await deleteCurrentStep(req, res);
+    }
+);
+
+// ORDERS
+router.post(
+    endpoints.add_order,
+    rateLimiter,
+    // withAuth,
+    async (req: Request, res: Response) => {
+        await addOrder(req, res);
+    }
+);
+
+// router.get(
+//   endpoints.get_current_step,
+//   rateLimiter,
+//   withAuth,
+//   async (req: Request, res: Response) => {
+//       await getCurrentStep(req, res);
+//   }
+// );
+
+router.get(
+    endpoints.get_all_orders,
+    rateLimiter,
+    // withAuth,
+    async (_req: Request, res: Response) => {
+        await getAllOrders(res);
+    }
+);
+
+router.delete(
+    endpoints.delete_all_orders,
+    rateLimiter,
+    // withAuth,
+    async (_req: Request, res: Response) => {
+        await deleteAllOrders(res);
     }
 );
 

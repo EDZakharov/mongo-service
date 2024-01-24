@@ -22,7 +22,7 @@ export const addValidCoin = async (req: Request, res: Response) => {
         }
 
         const newCoin = await Coin.create({ symbol });
-        console.log(newCoin);
+
         return res.status(201).json({
             message: `Coin symbol ${newCoin} added`,
             success: true,
