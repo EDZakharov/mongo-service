@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
+import orderDTO from '../dto/orderDTO';
 import { Coin } from '../models/coinsModel';
 import { Order } from '../models/ordersModel';
 
 export const addOrder = async (req: Request, res: Response) => {
     try {
-        const { side, orderId, orderLinkId } = req.body.orders;
-        const { coin } = req.body;
+        const { side, coin, orderId, orderLinkId } = req.body;
         const { id } = req.query;
 
         if (!coin || !side || !orderId || !orderLinkId) {
@@ -23,31 +23,34 @@ export const addOrder = async (req: Request, res: Response) => {
         }
 
         const foundDuplicate = await Order.findOne({
+            userId: id,
             coin,
             side,
+            orderId,
+            orderLinkId,
         });
-        // const foundDuplicate1 = await Order.deleteOne({ orderId: null });
-        // console.log(foundDuplicate1);
 
         if (!foundDuplicate) {
-            await Order.create({
+            const newOrder = new Order({
                 userId: id,
                 coin,
-                orders: {
-                    side,
-                    orderId,
-                    orderLinkId,
-                },
+                side,
+                orderId,
+                orderLinkId,
+            });
+
+            await newOrder.save();
+
+            return res.status(201).json({
+                message: `${side} order was created`,
+                success: true,
             });
         } else {
             await Order.updateOne(
                 { userId: id, coin, side },
                 {
-                    orders: {
-                        side,
-                        orderId,
-                        orderLinkId,
-                    },
+                    orderId,
+                    orderLinkId,
                 }
             );
 
@@ -56,35 +59,47 @@ export const addOrder = async (req: Request, res: Response) => {
                 status: true,
             });
         }
-        return res.status(201).json({
-            message: `${side} order was created`,
-            success: true,
-        });
-    } catch (error) {
-        console.log(error);
+    } catch (error: any) {
+        const searchRegEx = /\{([^}]+)\}/gm;
+        const stringifiedError = error.toString().match(searchRegEx);
+        const parsedError = JSON.parse(stringifiedError);
 
-        return res.status(400).json({
-            message: 'Unable to create order',
-            success: false,
-        });
+        if (parsedError && parsedError.message) {
+            return res.status(400).json({
+                message: `${parsedError.message}`,
+                success: false,
+            });
+        } else if (error._message && error.errors?.userId) {
+            return res.status(404).json({
+                message: 'User not found',
+                success: false,
+            });
+        } else {
+            return res.status(400).json({
+                message: 'Unable to create order',
+                success: false,
+            });
+        }
     }
 };
 
 export const getAllOrders = async (res: Response) => {
     try {
-        const allOrders = await Order.find({});
-        if (!allOrders || allOrders.length === 0) {
+        const orders = await Order.find({});
+        if (!orders || orders.length === 0) {
             return res.status(404).json({
                 message: 'Orders not found',
                 success: false,
             });
         }
 
+        const orderDto = orders.map((order) => new orderDTO(order));
+
         return res.status(200).json({
-            ...allOrders,
+            orders: orderDto,
             message: `Orders found`,
             success: true,
-            count: allOrders.length,
+            count: orders.length,
         });
     } catch (error) {
         return res.status(400).json({

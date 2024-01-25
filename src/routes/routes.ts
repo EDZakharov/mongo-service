@@ -245,7 +245,7 @@ router.get(
 router.get(
     endpoints.get_users,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (_req: Request, res: Response) => {
         await getUsers(res);
     }

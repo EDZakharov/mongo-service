@@ -1,4 +1,5 @@
 export default class StrategyDto {
+    userId;
     coin;
     side;
     orderId;
@@ -7,6 +8,7 @@ export default class StrategyDto {
     updatedAt;
 
     constructor(model: any) {
+        this.userId = model.userId;
         this.coin = model.coin;
         this.side = model.side;
         this.orderId = model.orderId;
