@@ -1,4 +1,7 @@
 import { Request, Response, Router } from 'express';
+import { getWalletBalanceSpot } from '../exchanges/bybit/account/getBalance';
+import { getFeeRateSpot } from '../exchanges/bybit/account/getFeeRate';
+import { getInstrumentInfo } from '../exchanges/bybit/market/getInstrumentsInfo';
 import { withAuth } from '../middlewares/auth';
 import { withCheckRole } from '../middlewares/checkrole';
 import { rateLimiter } from '../middlewares/rateLimiter';
@@ -51,7 +54,34 @@ const endpoints = {
     get_all_orders: '/get-all-orders',
     delete_order: '/delete-order',
     delete_all_orders: '/delete-all-orders',
+    get_instruments_info_bybit: '/get-instruments-info-bybit',
+    get_wallet_balance_spot_bybit: '/get-wallet-balance-spot-bybit',
+    get_fee_rate_spot_bybit: '/get-fee-rate-spot-bybit',
 };
+
+//BYBIT
+router.get(
+    endpoints.get_fee_rate_spot_bybit,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await getFeeRateSpot(req, res);
+    }
+);
+router.get(
+    endpoints.get_instruments_info_bybit,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await getInstrumentInfo(req, res);
+    }
+);
+
+router.get(
+    endpoints.get_wallet_balance_spot_bybit,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await getWalletBalanceSpot(req, res);
+    }
+);
 
 //Public endpoints
 router.post(
@@ -154,7 +184,7 @@ router.delete(
 router.post(
     endpoints.set_current_step,
     rateLimiter,
-    withAuth,
+    // withAuth,
     async (req: Request, res: Response) => {
         await setCurrentStep(req, res);
     }

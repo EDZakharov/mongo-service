@@ -78,6 +78,12 @@ export async function setStrategyToDb(req: Request, res: Response) {
             status: true,
         });
     } catch (error: any) {
+        if (error && error.errors) {
+            return res.status(400).json({
+                message: `${error._message}. ${error.errors.coin}`,
+                status: false,
+            });
+        }
         return res.status(400).json({
             message: `Unable to set strategy ${
                 error.message ? '| ' + error.message : ''

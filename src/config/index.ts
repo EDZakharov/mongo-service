@@ -13,4 +13,7 @@ export const config = {
     DB_NAME: process.env['APP_DB_NAME'],
     DB_PORT: process.env['APP_DB_PORT'],
     APP_PORT: process.env['APP_PORT'],
+    //BYBIT
+    APP_KEY_BYBIT: process.env['API_KEY_BYBIT'],
+    APP_SECRET_KEY_BYBIT: process.env['API_SECRET_KEY_BYBIT'],
 };

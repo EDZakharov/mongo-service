@@ -17,7 +17,6 @@ export const refresh = async (req: Request, res: Response) => {
     }
 
     const refreshToken: string | undefined = req.body.refreshToken;
-    console.log(refreshToken);
 
     if (!refreshToken) {
         return showUnauthorizedError(res);
@@ -38,7 +37,6 @@ export const refresh = async (req: Request, res: Response) => {
         checkAccessSecret,
         checkRefreshSecret
     );
-    console.log(refreshToken);
 
     await saveRefreshToken(userDto.id, tokens.refreshToken);
 
