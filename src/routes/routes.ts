@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getWalletBalanceSpot } from '../exchanges/bybit/account/getBalance';
 import { getFeeRateSpot } from '../exchanges/bybit/account/getFeeRate';
 import { getInstrumentInfo } from '../exchanges/bybit/market/getInstrumentsInfo';
+import { placeBuyOrder } from '../exchanges/bybit/trade/placeOrder';
 import { withAuth } from '../middlewares/auth';
 import { withCheckRole } from '../middlewares/checkrole';
 import { rateLimiter } from '../middlewares/rateLimiter';
@@ -57,6 +58,7 @@ const endpoints = {
     get_instruments_info_bybit: '/get-instruments-info-bybit',
     get_wallet_balance_spot_bybit: '/get-wallet-balance-spot-bybit',
     get_fee_rate_spot_bybit: '/get-fee-rate-spot-bybit',
+    place_buy_order_spot_bybit: '/place-buy-order-spot-bybit',
 };
 
 //BYBIT
@@ -67,6 +69,7 @@ router.get(
         await getFeeRateSpot(req, res);
     }
 );
+
 router.get(
     endpoints.get_instruments_info_bybit,
     rateLimiter,
@@ -80,6 +83,14 @@ router.get(
     rateLimiter,
     async (req: Request, res: Response) => {
         await getWalletBalanceSpot(req, res);
+    }
+);
+
+router.post(
+    endpoints.place_buy_order_spot_bybit,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await placeBuyOrder(req, res);
     }
 );
 

@@ -55,7 +55,7 @@ const orderSchema = new Schema(
 
         side: {
             type: String,
-            enum: ['buy', 'sell'],
+            enum: ['Buy', 'Sell'],
             required: true,
         },
 

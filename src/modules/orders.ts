@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import orderDTO from '../dto/orderDTO';
+import { IPlaceOrder } from '../exchanges/bybit/trade/placeOrder';
 import { Coin } from '../models/coinsModel';
 import { Order } from '../models/ordersModel';
 
@@ -79,6 +80,72 @@ export const addOrder = async (req: Request, res: Response) => {
                 message: 'Unable to create order',
                 success: false,
             });
+        }
+    }
+};
+
+interface IAddInnerBuyOrder extends IPlaceOrder {
+    coin?: string;
+    orderId?: string;
+    orderLinkId?: string;
+    id?: string;
+}
+
+export const addInnerBuyOrder = async ({
+    coin,
+    orderId,
+    orderLinkId,
+    id,
+}: IAddInnerBuyOrder) => {
+    try {
+        if (!coin || !orderId || !orderLinkId || !id) {
+            return { message: 'Bad params', status: false };
+        }
+
+        const foundDuplicate = await Order.findOne({
+            userId: id,
+            coin,
+            side: 'Buy',
+            orderId,
+            orderLinkId,
+        });
+
+        if (!foundDuplicate) {
+            const newOrder = new Order({
+                userId: id,
+                coin,
+                side: 'Buy',
+                orderId,
+                orderLinkId,
+            });
+
+            await newOrder.save();
+
+            return { message: 'Order was created', status: true };
+        } else {
+            await Order.updateOne(
+                { userId: id, coin, side: 'Buy' },
+                {
+                    orderId,
+                    orderLinkId,
+                }
+            );
+
+            return { message: 'Order was updated', status: true };
+        }
+    } catch (error: any) {
+        console.log(error);
+
+        const searchRegEx = /\{([^}]+)\}/gm;
+        const stringifiedError = error.toString().match(searchRegEx);
+        const parsedError = JSON.parse(stringifiedError);
+
+        if (parsedError && parsedError.message) {
+            return { message: parsedError.message, status: false };
+        } else if (error._message && error.errors?.userId) {
+            return { message: 'User not found', status: false };
+        } else {
+            return { message: 'Unable to create order', status: false };
         }
     }
 };
