@@ -4,6 +4,13 @@ import { IPlaceOrder } from '../exchanges/bybit/trade/placeOrder';
 import { Coin } from '../models/coinsModel';
 import { Order } from '../models/ordersModel';
 
+interface IAddInnerBuyOrder extends IPlaceOrder {
+    coin?: string;
+    orderId?: string;
+    orderLinkId?: string;
+    id?: string;
+}
+
 export const addOrder = async (req: Request, res: Response) => {
     try {
         const { side, coin, orderId, orderLinkId } = req.body;
@@ -84,13 +91,6 @@ export const addOrder = async (req: Request, res: Response) => {
     }
 };
 
-interface IAddInnerBuyOrder extends IPlaceOrder {
-    coin?: string;
-    orderId?: string;
-    orderLinkId?: string;
-    id?: string;
-}
-
 export const addInnerBuyOrder = async ({
     coin,
     orderId,
@@ -150,6 +150,7 @@ export const addInnerBuyOrder = async ({
     }
 };
 
+//TODO
 export const getAllOrders = async (res: Response) => {
     try {
         const orders = await Order.find({});

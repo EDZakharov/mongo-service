@@ -35,46 +35,48 @@ export const placeBuyOrder = async (req: Request, res: Response) => {
             (coin) => coin.symbol
         );
 
-        if (validateSymbol.includes(symbol)) {
-            const result = await bybit.submitOrder({
-                category: 'spot',
-                orderType: 'Limit',
-                side: 'Buy',
-                symbol,
-                qty,
-                price,
-            });
-
-            if (
-                (result && !result.result.orderId) ||
-                (result && !result.result.orderLinkId)
-            ) {
-                throw new Error(result.retMsg);
-            }
-            const addResult = await addInnerBuyOrder({
-                coin: symbol,
-                orderId: result.result.orderId,
-                orderLinkId: result.result.orderLinkId,
-                id,
-            });
-
-            if (!addResult.status) {
-                await bybit.cancelOrder({
-                    category: 'spot',
-                    symbol,
-                    orderId: result.result.orderId,
-                });
-                throw new Error(addResult.message);
-            }
-
-            return res.status(200).json({
-                ...result,
-                ...addResult,
-                success: true,
-            });
-        } else {
+        if (!validateSymbol.includes(symbol)) {
             throw new Error('Coin validation failed');
         }
+
+        const result = await bybit.submitOrder({
+            category: 'spot',
+            orderType: 'Limit',
+            side: 'Buy',
+            symbol,
+            qty,
+            price,
+        });
+
+        if (
+            (result && !result.result.orderId) ||
+            (result && !result.result.orderLinkId)
+        ) {
+            throw new Error(result.retMsg);
+        }
+
+        const addResult = await addInnerBuyOrder({
+            coin: symbol,
+            orderId: result.result.orderId,
+            orderLinkId: result.result.orderLinkId,
+            id,
+        });
+
+        if (!addResult.status) {
+            await bybit.cancelOrder({
+                category: 'spot',
+                symbol,
+                orderId: result.result.orderId,
+            });
+
+            throw new Error(addResult.message);
+        }
+
+        return res.status(200).json({
+            ...result,
+            ...addResult,
+            success: true,
+        });
     } catch (error: any) {
         if (error.message) {
             return res.status(400).json({

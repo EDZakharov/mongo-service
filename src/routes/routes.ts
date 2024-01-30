@@ -4,8 +4,15 @@ import { getFeeRateSpot } from '../exchanges/bybit/account/getFeeRate';
 import { getInstrumentInfo } from '../exchanges/bybit/market/getInstrumentsInfo';
 import { placeBuyOrder } from '../exchanges/bybit/trade/placeOrder';
 import { withAuth } from '../middlewares/auth';
+import { withCheckApiKeys } from '../middlewares/checkApiKeys';
 import { withCheckRole } from '../middlewares/checkrole';
 import { rateLimiter } from '../middlewares/rateLimiter';
+import {
+    deleteApiKey,
+    getAllApiKeys,
+    getApiKey,
+    setApiKey,
+} from '../modules/apiKeys';
 import { addValidCoin, getValidCoins } from '../modules/coins';
 import { userLogin } from '../modules/login';
 import { userLogout } from '../modules/logout';
@@ -55,11 +62,48 @@ const endpoints = {
     get_all_orders: '/get-all-orders',
     delete_order: '/delete-order',
     delete_all_orders: '/delete-all-orders',
+    set_api_key: '/set-api-key',
+    get_api_key: '/get-api-key',
+    get_all_api_keys: '/get-all-api-keys',
+    delete_api_key: '/delete-api-key',
+    //BYBIT
     get_instruments_info_bybit: '/get-instruments-info-bybit',
     get_wallet_balance_spot_bybit: '/get-wallet-balance-spot-bybit',
     get_fee_rate_spot_bybit: '/get-fee-rate-spot-bybit',
     place_buy_order_spot_bybit: '/place-buy-order-spot-bybit',
 };
+
+router.post(
+    endpoints.set_api_key,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await setApiKey(req, res);
+    }
+);
+
+router.get(
+    endpoints.get_api_key,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await getApiKey(req, res);
+    }
+);
+
+router.get(
+    endpoints.get_all_api_keys,
+    rateLimiter,
+    async (_req: Request, res: Response) => {
+        await getAllApiKeys(res);
+    }
+);
+
+router.delete(
+    endpoints.delete_api_key,
+    rateLimiter,
+    async (req: Request, res: Response) => {
+        await deleteApiKey(req, res);
+    }
+);
 
 //BYBIT
 router.get(
@@ -81,6 +125,7 @@ router.get(
 router.get(
     endpoints.get_wallet_balance_spot_bybit,
     rateLimiter,
+    withCheckApiKeys('bybit1'),
     async (req: Request, res: Response) => {
         await getWalletBalanceSpot(req, res);
     }
@@ -89,6 +134,7 @@ router.get(
 router.post(
     endpoints.place_buy_order_spot_bybit,
     rateLimiter,
+    withCheckApiKeys('bybit'),
     async (req: Request, res: Response) => {
         await placeBuyOrder(req, res);
     }
@@ -102,6 +148,7 @@ router.post(
         await userRegister(req.body, 'user', res);
     }
 );
+
 router.post(
     endpoints.login_user,
     rateLimiter,

@@ -3,10 +3,11 @@ import { bybit } from '../bybit';
 
 interface IGetWalletQuery {
     symbol?: string;
+    id?: string;
 }
 
 export const getWalletBalanceSpot = async (req: Request, res: Response) => {
-    const { symbol }: IGetWalletQuery = req.query;
+    const { symbol, id }: IGetWalletQuery = req.query;
 
     if (!symbol) {
         return res.status(400).json({
@@ -14,6 +15,14 @@ export const getWalletBalanceSpot = async (req: Request, res: Response) => {
             success: false,
         });
     }
+
+    if (!id || id.length !== 24) {
+        return res.status(400).json({
+            message: 'Id must be 24 hex string',
+            status: false,
+        });
+    }
+
     try {
         const result = await bybit.getCoinBalance({
             coin: symbol,
