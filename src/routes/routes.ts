@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getWalletBalanceSpot } from '../exchanges/bybit/account/getBalance';
 import { getFeeRateSpot } from '../exchanges/bybit/account/getFeeRate';
 import { getInstrumentInfo } from '../exchanges/bybit/market/getInstrumentsInfo';
-import { placeBuyOrder } from '../exchanges/bybit/trade/placeOrder';
+import { placeOrder } from '../exchanges/bybit/trade/placeOrder';
 import { withAuth } from '../middlewares/auth';
 import { withCheckApiKeys } from '../middlewares/checkApiKeys';
 import { withCheckRole } from '../middlewares/checkrole';
@@ -16,7 +16,7 @@ import {
 import { addValidCoin, getValidCoins } from '../modules/coins';
 import { userLogin } from '../modules/login';
 import { userLogout } from '../modules/logout';
-import { addOrder, deleteAllOrders, getAllOrders } from '../modules/orders';
+import { addOrder, deleteAllCoinOrders, getAllOrders } from '../modules/orders';
 import { refresh } from '../modules/refresh';
 import { userRegister } from '../modules/registration';
 import {
@@ -61,7 +61,7 @@ const endpoints = {
     get_order: '/get-order',
     get_all_orders: '/get-all-orders',
     delete_order: '/delete-order',
-    delete_all_orders: '/delete-all-orders',
+    delete_all_coin_orders: '/delete-all-coin-orders',
     set_api_key: '/set-api-key',
     get_api_key: '/get-api-key',
     get_all_api_keys: '/get-all-api-keys',
@@ -71,6 +71,7 @@ const endpoints = {
     get_wallet_balance_spot_bybit: '/get-wallet-balance-spot-bybit',
     get_fee_rate_spot_bybit: '/get-fee-rate-spot-bybit',
     place_buy_order_spot_bybit: '/place-buy-order-spot-bybit',
+    place_sell_order_spot_bybit: '/place-sell-order-spot-bybit',
 };
 
 router.post(
@@ -135,9 +136,14 @@ router.post(
     endpoints.place_buy_order_spot_bybit,
     rateLimiter,
     withCheckApiKeys('bybit'),
-    async (req: Request, res: Response) => {
-        await placeBuyOrder(req, res);
-    }
+    placeOrder('Buy', 'Market')
+);
+
+router.post(
+    endpoints.place_sell_order_spot_bybit,
+    rateLimiter,
+    withCheckApiKeys('bybit'),
+    placeOrder('Sell', 'Limit')
 );
 
 //Public endpoints
@@ -295,11 +301,11 @@ router.get(
 );
 
 router.delete(
-    endpoints.delete_all_orders,
+    endpoints.delete_all_coin_orders,
     rateLimiter,
     // withAuth,
-    async (_req: Request, res: Response) => {
-        await deleteAllOrders(res);
+    async (req: Request, res: Response) => {
+        await deleteAllCoinOrders(req, res);
     }
 );
 

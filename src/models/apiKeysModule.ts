@@ -15,15 +15,6 @@ const ApiKeysSchema = new Schema({
             'gemini',
         ],
         required: true,
-        // validate: {
-        //     validator: async function (user: Types.ObjectId) {
-        //         const foundUsers = await getUser();
-        //         return foundUsers
-        //             .map((foundUser) => foundUser.toString())
-        //             .includes(user.toString());
-        //     },
-        //     message: 'User not found',
-        // },
     },
     apiKey: {
         type: String,

@@ -9,6 +9,7 @@ interface IAddInnerBuyOrder extends IPlaceOrder {
     orderId?: string;
     orderLinkId?: string;
     id?: string;
+    side?: 'Buy' | 'Sell';
 }
 
 export const addOrder = async (req: Request, res: Response) => {
@@ -23,10 +24,10 @@ export const addOrder = async (req: Request, res: Response) => {
             });
         }
 
-        if (!id) {
+        if (!id || id.length !== 24) {
             return res.status(400).json({
-                message: 'Invalid query data',
-                success: false,
+                message: 'Id must be 24 hex string',
+                status: false,
             });
         }
 
@@ -96,16 +97,24 @@ export const addInnerBuyOrder = async ({
     orderId,
     orderLinkId,
     id,
+    side,
 }: IAddInnerBuyOrder) => {
     try {
-        if (!coin || !orderId || !orderLinkId || !id) {
+        if (
+            !coin ||
+            !orderId ||
+            !orderLinkId ||
+            !id ||
+            id.length !== 24 ||
+            !side
+        ) {
             return { message: 'Bad params', status: false };
         }
 
         const foundDuplicate = await Order.findOne({
             userId: id,
             coin,
-            side: 'Buy',
+            side,
             orderId,
             orderLinkId,
         });
@@ -114,7 +123,7 @@ export const addInnerBuyOrder = async ({
             const newOrder = new Order({
                 userId: id,
                 coin,
-                side: 'Buy',
+                side,
                 orderId,
                 orderLinkId,
             });
@@ -124,7 +133,7 @@ export const addInnerBuyOrder = async ({
             return { message: 'Order was created', status: true };
         } else {
             await Order.updateOne(
-                { userId: id, coin, side: 'Buy' },
+                { userId: id, coin, side },
                 {
                     orderId,
                     orderLinkId,
@@ -134,8 +143,6 @@ export const addInnerBuyOrder = async ({
             return { message: 'Order was updated', status: true };
         }
     } catch (error: any) {
-        console.log(error);
-
         const searchRegEx = /\{([^}]+)\}/gm;
         const stringifiedError = error.toString().match(searchRegEx);
         const parsedError = JSON.parse(stringifiedError);
@@ -225,9 +232,25 @@ export const deleteOrder = async (res: Response) => {
     }
 };
 
-export const deleteAllOrders = async (res: Response) => {
+export const deleteAllCoinOrders = async (req: Request, res: Response) => {
+    const { id, coin } = req.query;
+
+    if (!coin) {
+        return res.status(400).json({
+            message: 'Invalid post data',
+            success: false,
+        });
+    }
+
+    if (!id || id.length !== 24) {
+        return res.status(400).json({
+            message: 'Id must be 24 hex string',
+            status: false,
+        });
+    }
+
     try {
-        const result = await Order.deleteMany({});
+        const result = await Order.deleteMany({ userId: id, coin });
         if (!result) {
             return res.status(400).json({
                 message: 'Orders not found',
